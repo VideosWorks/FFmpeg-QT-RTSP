@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 李震
  * 我的码云：https://git.oschina.net/git-lizhen
  * 我的CSDN博客：http://blog.csdn.net/weixin_38215395
@@ -12,7 +12,10 @@
 #include <QImage>
 #include <QPaintEvent>
 #include <QWidget>
+#include <QtDebug>
 
+#include "qfi_NAV.h"
+#include <QtConcurrent/qtconcurrentrun.h>
 #include "videoplayer/videoplayer.h"
 
 namespace Ui {
@@ -27,27 +30,32 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+	//QImage Indentificate(QImage img);    //显示二值图像，2017.10.10
+
 protected:
     void paintEvent(QPaintEvent *event);
 
 private:
     Ui::MainWindow *ui;
 
-    VideoPlayer *mPlayer; //播放线程
+    VideoPlayer *mPlayer;                  //播放线程
 
-    QImage mImage; //记录当前的图像
-    QImage R_mImage; //2017.8.11---lizhen
+    QImage mImage;                         //记录当前的图像
+    QImage R_mImage;                       //2017.8.11---lizhen
 
     QString url; 
 
     bool open_red=false;
 
+	float ZongQingJiao;                    //纵倾角大小
+	float HengGunJiao;                     //横滚角大小
+	float PianZhuanJiao;                   //偏转角大小
+
 private slots:
     void slotGetOneFrame(QImage img);
-    void slotGetRFrame(QImage img);///2017.8.11---lizhen
-    bool slotOpenRed();        ///2017.8.12---lizhen
-    bool slotCloseRed();       ///2017.8.12
-
+    void slotGetRFrame(QImage img);        //2017.8.11---lizhen
+    bool slotOpenRed();                    //2017.8.12---lizhen
+    bool slotCloseRed();                   //2017.8.12
 };
 
 #endif // MAINWINDOW_H
