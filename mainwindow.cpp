@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 李震
  * 我的码云：https://git.oschina.net/git-lizhen
  * 我的CSDN博客：http://blog.csdn.net/weixin_38215395
@@ -7,28 +7,36 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "qgraphicsview.h"
 
+#include <QThread>
 #include <QPainter>
 #include <QInputDialog>
 #include <QtMath>
 
 #include<iostream>
 using namespace std;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
-{
+	ZongQingJiao(0),
+	HengGunJiao(0),
+	PianZhuanJiao(0),
+   ui(new Ui::MainWindow)
+{ 
+	
     ui->setupUi(this);
 
     mPlayer = new VideoPlayer;
     connect(mPlayer,SIGNAL(sig_GetOneFrame(QImage)),this,SLOT(slotGetOneFrame(QImage)));
-    ///2017.8.11---lizhen
+    //2017.8.11---lizhen
     connect(mPlayer,SIGNAL(sig_GetRFrame(QImage)),this,SLOT(slotGetRFrame(QImage)));
-    ///2017.8.12---lizhen
+    //2017.8.12---lizhen
     connect(ui->Open_red,&QAction::triggered,this,&MainWindow::slotOpenRed);
     connect(ui->Close_Red,&QAction::triggered,this,&MainWindow::slotCloseRed);
 
     mPlayer->startPlay();
+
 }
 
 MainWindow::~MainWindow()
@@ -38,7 +46,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
-
     QPainter painter(this);
 
     painter.setBrush(Qt::white);
@@ -46,7 +53,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     if (mImage.size().width() <= 0) return;
 
-    ///将图像按比例缩放成和窗口一样大小
+    //将图像按比例缩放成和窗口一样大小
     QImage img = mImage.scaled(this->size(),Qt::KeepAspectRatio);
 
     int x = this->width() - img.width();
@@ -58,17 +65,17 @@ void MainWindow::paintEvent(QPaintEvent *event)
     painter.drawImage(QPoint(x,y),img); //画出图像
 
     if(open_red==true){
-    ///2017.8.12
+    //2017.8.12
     QWidget *red_video=new QWidget(this);
     red_video->resize(this->width()/3,this->height()/3);
-    ///2017.8.11---lizhen
+    //2017.8.11---lizhen
     //提取出图像中的R数据
     painter.setBrush(Qt::white);
     painter.drawRect(0, 0, red_video->width(),red_video->height()); //先画成白色
 
     if (R_mImage.size().width() <= 0) return;
 
-    ///将图像按比例缩放成和窗口一样大小
+    //将图像按比例缩放成和窗口一样大小
     QImage R_img = R_mImage.scaled(red_video->size(),Qt::KeepAspectRatio);
 
     int R_x = red_video->width() - R_img.width();
@@ -80,38 +87,35 @@ void MainWindow::paintEvent(QPaintEvent *event)
     painter.drawImage(QPoint(R_x,R_y),R_img);  //画出图像
     }
 
-    ///2017.8.10---lizhen
-    //获取图像中心点
-    double x0=this->width()/2;
-    double y0=this->height()/2;
+	//2017.8.10---lizhen
+	//获取图像中心点
+	int x0 = this->width();
+	int y0 = this->height();
+	int ww = ui->NAV_widget->width();
+	int hh = ui->NAV_widget->height();
+	int xx = (x0 - ww) / 2+50;
+	int yy = (y0 - hh) / 2;
 
-    //载体偏移角度，可从设备处获得
-    double alpha=2;             //横滚角alpha
-    int length=60;
+	//2017.12.26
+	ui->NAV_widget->ChangeSize(ww, hh);
+	ui->NAV_widget->MoveWidget(xx, yy);
+	ui->NAV_widget->setBGColor();
+	ui->NAV_widget->setCentral(xx, yy);
+	ui->NAV_widget->setWindowFlags(Qt::Widget | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowStaysOnTopHint);
 
-    //设备偏移后的“水平”参考坐标
-    //横滚角产生
-    double x_Horizental_right=length*qCos(alpha);
-    double y_Horizental_right=-length*qSin(alpha);
-    double x_Horizental_left=-length*qCos(alpha);
-    double y_Horizental_left=length*qSin(alpha);
-    double x_Vertical_up=length*qSin(alpha);
-    double y_Vertical_up=length*qCos(alpha);
-    double x_Vertical_down=-length*qSin(alpha);
-    double y_Vertical_down=-length*qCos(alpha);
+	//载体偏移角度，从姿态传感器处获得
+	HengGunJiao --;
+	ZongQingJiao --;
+	PianZhuanJiao --;
 
-    ///水平参考坐标系，2017.8.7---lizhen
-    painter.setPen(QPen(Qt::blue,1,Qt::DotLine));
-    painter.drawLine( x0-40,y0, x0+40,y0);
-    painter.drawLine( x0,y0-40, x0,y0+40);
-
-    ///横滚运动-偏移坐标系，2017.8.7---lizhen
-    if(alpha!=0)
-    {
-        painter.setPen(QPen(Qt::blue,3));
-        painter.drawLine( x0+x_Horizental_left,y0+y_Horizental_left, x0+x_Horizental_right,y0+y_Horizental_right);
-        painter.drawLine( x0+x_Vertical_up,y0+y_Vertical_up, x0+x_Vertical_down,y0+y_Vertical_down);
-    }
+	//设置AUV的横滚角
+	ui->NAV_widget->setHengGun(HengGunJiao);
+	//AUV的纵倾角
+	ui->NAV_widget->setZongQing(ZongQingJiao);
+	//AUV的偏转角
+	ui->NAV_widget->setPianZhuan(PianZhuanJiao);
+	//更新
+	ui->NAV_widget->update();   
 }
 
 void MainWindow::slotGetOneFrame(QImage img)
@@ -119,26 +123,51 @@ void MainWindow::slotGetOneFrame(QImage img)
     mImage = img;
     update(); //调用update将执行 paintEvent函数
 }
-///小窗口显示
+//2017.10.10，显示二值图像
+QImage Indentificate(QImage image)
+{
+	QSize size = image.size();
+	QImage binaryImage(size, QImage::Format_RGB32);
+	int width = image.width(), height = image.height();
+	int threshold = 200;
+	for (int i = 0; i<width; i++)
+		for (int j = 0; j < height; j++)
+		{
+			QRgb pixel = image.pixel(i, j);
+			int r = qRed(pixel) * 0.3;
+			int g = qGreen(pixel) * 0.59;
+			int b = qBlue(pixel) * 0.11;
+			int rgb = r + g + b;        //先把图像灰度化，转化为灰度图像
+			if (rgb > threshold)        //然后按某一阀值进行二值化
+				rgb = 255;
+			else
+				rgb = 0;
+			QRgb newPixel = qRgb(rgb, rgb, rgb);
+			binaryImage.setPixel(i, j, newPixel);
+		}
+	return binaryImage;
+}
+//小窗口显示
 void MainWindow::slotGetRFrame(QImage img)
 {
     R_mImage = img;
+	//2017.10.9---在新线程中执行显示二值图像函数
+	//QFuture<QImage> future = QtConcurrent::run(Indentificate, mImage);
+	//R_mImage = future.result();
     update(); //调用update将执行 paintEvent函数
 }
-///显示图像红色通道,2017.8.12---lizhen
+//显示图像红色通道,2017.8.12---lizhen
 bool MainWindow::slotOpenRed()
 {
     open_red=true;
     return open_red;
 }
-///关闭图像红色通道，2017.8.12
+//关闭图像红色通道，2017.8.12
 bool MainWindow::slotCloseRed()
 {
     open_red=false;
     return open_red;
 }
-
-
 
 
 
