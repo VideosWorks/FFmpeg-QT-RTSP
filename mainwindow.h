@@ -14,7 +14,6 @@
 #include <QWidget>
 #include <QtDebug>
 
-#include "qfi_NAV.h"
 #include <QtConcurrent/qtconcurrentrun.h>
 #include "videoplayer/videoplayer.h"
 
@@ -46,10 +45,6 @@ private:
     QString url; 
 
     bool open_red=false;
-
-	float ZongQingJiao;                    //纵倾角大小
-	float HengGunJiao;                     //横滚角大小
-	float PianZhuanJiao;                   //偏转角大小
 
 private slots:
     void slotGetOneFrame(QImage img);
