@@ -7,7 +7,6 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "qgraphicsview.h"
 
 #include <QThread>
 #include <QPainter>
@@ -19,9 +18,6 @@ using namespace std;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-	ZongQingJiao(0),
-	HengGunJiao(0),
-	PianZhuanJiao(0),
    ui(new Ui::MainWindow)
 { 
 	
@@ -86,36 +82,6 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     painter.drawImage(QPoint(R_x,R_y),R_img);  //画出图像
     }
-
-	//2017.8.10---lizhen
-	//获取图像中心点
-	int x0 = this->width();
-	int y0 = this->height();
-	int ww = ui->NAV_widget->width();
-	int hh = ui->NAV_widget->height();
-	int xx = (x0 - ww) / 2+50;
-	int yy = (y0 - hh) / 2;
-
-	//2017.12.26
-	ui->NAV_widget->ChangeSize(ww, hh);
-	ui->NAV_widget->MoveWidget(xx, yy);
-	ui->NAV_widget->setBGColor();
-	ui->NAV_widget->setCentral(xx, yy);
-	ui->NAV_widget->setWindowFlags(Qt::Widget | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowStaysOnTopHint);
-
-	//载体偏移角度，从姿态传感器处获得
-	HengGunJiao --;
-	ZongQingJiao --;
-	PianZhuanJiao --;
-
-	//设置AUV的横滚角
-	ui->NAV_widget->setHengGun(HengGunJiao);
-	//AUV的纵倾角
-	ui->NAV_widget->setZongQing(ZongQingJiao);
-	//AUV的偏转角
-	ui->NAV_widget->setPianZhuan(PianZhuanJiao);
-	//更新
-	ui->NAV_widget->update();   
 }
 
 void MainWindow::slotGetOneFrame(QImage img)
